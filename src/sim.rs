@@ -31,6 +31,7 @@ where
 {
     fn run(&mut self) -> Result<String, BfError> {
         while self.index < self.program.len() {
+            let is_cl_bracket: bool = &self.program[self.index] != &Inst::ClBracket;
             match &self.program[self.index] {
                 &Inst::Add => self.add()?,
                 &Inst::Sub => self.sub()?,
@@ -41,7 +42,7 @@ where
                 &Inst::Input => self.input()?,
                 &Inst::Output => self.output()?,
             }
-            if &self.program[self.index] != &Inst::ClBracket {
+            if is_cl_bracket {
                 self.index += 1;
             }
         }
@@ -74,8 +75,7 @@ where
         }
     }
     fn output(&mut self) -> Result<(), BfError> {
-        self.output
-            .push_str(std::str::from_utf8(&[self.storage.get() as u8]).unwrap());
+        self.output.push((self.storage.get() as u8) as char);
         Ok(())
     }
     fn cl_bracket(&mut self) -> Result<(), BfError> {
@@ -108,15 +108,9 @@ where
     }
 }
 
-impl<Storage> BfSimu<Storage>
-where
-    Storage: BfStorageSimu,
-{
-    pub fn new_array_impl(
-        prog_str: &str,
-        input_str: &str,
-    ) -> Result<BfSimu<BfArrayImplementation>, BfError> {
-        let program: Vec<Inst> = BfSimu::<BfArrayImplementation>::program_from_str(prog_str)?;
+impl BfSimu<BfArrayImplementation> {
+    pub fn new(prog_str: &str, input_str: &str) -> Result<BfSimu<BfArrayImplementation>, BfError> {
+        let program: Vec<Inst> = program_from_str(prog_str)?;
         let index: usize = 0;
         let output: String = String::new();
         let input: Vec<char> = input_str.to_string().chars().collect();
@@ -131,10 +125,43 @@ where
             storage,
         })
     }
-    // TODO: implement this function
-    pub fn program_from_str(_prog_str: &str) -> Result<Vec<Inst>, BfError> {
-        return Err(BfError::InvalidProgram { invalid_char: '*' });
+}
+
+pub fn program_from_str(prog_str: &str) -> Result<Vec<Inst>, BfError> {
+    let mut res: Vec<Inst> = vec![];
+    for c in prog_str.trim().chars() {
+        match c {
+            '>' => res.push(Inst::Right),
+            '<' => res.push(Inst::Left),
+            '+' => res.push(Inst::Add),
+            '-' => res.push(Inst::Sub),
+            '[' => res.push(Inst::OpBracket),
+            ']' => res.push(Inst::ClBracket),
+            '.' => res.push(Inst::Output),
+            ',' => res.push(Inst::Output),
+            x => return Err(BfError::InvalidProgram { invalid_char: x }),
+        }
     }
+    check_valid_prog(&res)?;
+    Ok(res)
+}
+
+pub fn check_valid_prog(prog: &Vec<Inst>) -> Result<(), BfError> {
+    let mut unclosed: u64 = 0;
+    for (i, inst) in prog.iter().enumerate() {
+        match inst {
+            &Inst::OpBracket => unclosed += 1,
+            &Inst::ClBracket => {
+                if unclosed == 0 {
+                    return Err(BfError::InvalidProgramBrackets { unmatched: i });
+                } else {
+                    unclosed -= 1;
+                }
+            }
+            _ => (),
+        }
+    }
+    Ok(())
 }
 
 #[derive(PartialEq)]

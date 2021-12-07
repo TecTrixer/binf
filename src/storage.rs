@@ -25,7 +25,7 @@ impl BfArrayImplementation {
 
 impl BfStorageSimu for BfArrayImplementation {
     fn right(&mut self) {
-        self.index = (self.index + 1) & ARR_SIZE;
+        self.index = (self.index + 1) % ARR_SIZE;
     }
     fn left(&mut self) {
         if self.index == 0 {

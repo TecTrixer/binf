@@ -6,6 +6,7 @@ pub enum BfError {
     InvalidProgram { invalid_char: char },
     RuntimeError,
     NoInput,
+    InvalidProgramBrackets { unmatched: usize },
 }
 
 impl Error for BfError {}
@@ -24,6 +25,9 @@ impl std::fmt::Display for BfError {
             }
             BfError::NoInput => {
                 write!(f, "your program expected input but there was none left")
+            }
+            BfError::InvalidProgramBrackets { unmatched: x } => {
+                write!(f, "your program has an unmatched bracket at position {}", x)
             }
         }
     }
