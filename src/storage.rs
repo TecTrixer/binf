@@ -3,15 +3,15 @@ pub trait BfStorageSimu {
     fn left(&mut self);
     fn add(&mut self);
     fn sub(&mut self);
-    fn get(&mut self) -> i64;
-    fn set(&mut self, value: i64);
+    fn get(&mut self) -> u8;
+    fn set(&mut self, value: u8);
 }
 
-const ARR_SIZE: usize = 1000;
+const ARR_SIZE: usize = 30000;
 
 pub struct BfArrayImplementation {
     index: usize,
-    storage: [i64; ARR_SIZE],
+    storage: [u8; ARR_SIZE],
 }
 
 impl BfArrayImplementation {
@@ -40,10 +40,10 @@ impl BfStorageSimu for BfArrayImplementation {
     fn sub(&mut self) {
         self.storage[self.index] -= 1;
     }
-    fn get(&mut self) -> i64 {
+    fn get(&mut self) -> u8 {
         self.storage[self.index]
     }
-    fn set(&mut self, value: i64) {
+    fn set(&mut self, value: u8) {
         self.storage[self.index] = value;
     }
 }

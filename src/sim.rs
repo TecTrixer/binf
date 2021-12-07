@@ -66,8 +66,7 @@ where
     }
     fn input(&mut self) -> Result<(), BfError> {
         if self.input_index < self.input.len() {
-            self.storage
-                .set((self.input[self.input_index] as u8) as i64);
+            self.storage.set(self.input[self.input_index] as u8);
             self.input_index += 1;
             Ok(())
         } else {
@@ -75,7 +74,7 @@ where
         }
     }
     fn output(&mut self) -> Result<(), BfError> {
-        self.output.push((self.storage.get() as u8) as char);
+        self.output.push(self.storage.get() as char);
         Ok(())
     }
     fn cl_bracket(&mut self) -> Result<(), BfError> {
@@ -129,7 +128,13 @@ impl BfSimu<BfArrayImplementation> {
 
 pub fn program_from_str(prog_str: &str) -> Result<Vec<Inst>, BfError> {
     let mut res: Vec<Inst> = vec![];
-    for c in prog_str.trim().chars() {
+    for c in prog_str
+        .trim()
+        .replace("\n", "")
+        .replace("\t", "")
+        .replace(' ', "")
+        .chars()
+    {
         match c {
             '>' => res.push(Inst::Right),
             '<' => res.push(Inst::Left),
